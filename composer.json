@@ -1,0 +1,24 @@
+{
+    "name": "grasmash/transcript-analyzer",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Matthew Grasmick",
+            "email": "matt.grasmick@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "symfony/console": "^6.0",
+        "captioning/captioning": "^2.6",
+        "symfony/filesystem": "^6.0",
+        "guzzlehttp/guzzle": "^7.4",
+        "kevinrob/guzzle-cache-middleware": "^4.0",
+        "symfony/cache": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Grasmash\\TranscriptAnalyzer\\": "src/"
+        }
+    }
+}
