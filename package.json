@@ -1,0 +1,15 @@
+{
+  "name": "transcript-analyzer",
+  "version": "1.0.0",
+  "description": "# Installation",
+  "scripts": {
+    "dump-words": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "buzzwords": "^2.0.0",
+    "fillers": "^2.0.0",
+    "hedges": "^2.0.0"
+  }
+}

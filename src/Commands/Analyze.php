@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class Analyze extends Command
 {
@@ -45,7 +46,10 @@ class Analyze extends Command
 
     $io->note('Speakers are listed in order of appearance');
     $table = new Table($output);
-    $table->setHeaders(['Speaker', 'Word count', 'Sentiment', 'Emotion', 'Keywords']);
+    $table->setHeaders(['Speaker', 'Word count', 'Bullshit', 'Sentiment', 'Emotion', 'Keywords']);
+    $weasel_words = $this->loadWords('weasels.txt');
+    $hedge_words = $this->loadWords('hedges.txt');
+    $filler_words = $this->loadWords('fillers.txt');
 
     $all_text = '';
     foreach ($text_by_author as $author => $cues) {
@@ -60,7 +64,12 @@ class Analyze extends Command
 
       $emotion_content = $this->getEmotionSummary($watson["emotion"]["document"]["emotion"]);
       $keyword_content = $this->getKeywordSummary($watson['keywords']);
-      $table->addRow([$author, $word_count, $sentiment, $emotion_content, $keyword_content]);
+      $bullshit_content = $this->calculateRatio($weasel_words, $row_text, $word_count, 'weasels');
+      $hedge_content = $this->calculateRatio($hedge_words, $row_text, $word_count, 'hedges');
+      $filler_content = $this->calculateRatio($filler_words, $row_text, $word_count, 'filler');
+      $content_stats = $bullshit_content . PHP_EOL . $hedge_content . PHP_EOL . $filler_content;
+
+      $table->addRow([$author, $word_count, $content_stats, $sentiment, $emotion_content, $keyword_content]);
     }
 
     $table->render();
@@ -260,6 +269,39 @@ class Analyze extends Command
       ],
     ]);
     return json_decode($result->getBody()->getContents(), TRUE);
+  }
+
+  /**
+   * @return string[]
+   */
+  protected function loadWords($filename): array {
+    return array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../../assets/' . $filename)));
+  }
+
+  /**
+   * @param array $words
+   * @param string $row_text
+   * @param int $word_count
+   * @param string $suffix
+   *
+   * @return string
+   */
+  protected function calculateRatio(array $words, string $row_text, int $word_count, string $suffix): string {
+    $score = 0;
+    $content = '';
+    $catalog = [];
+    foreach ($words as $word) {
+      $count = substr_count($row_text, $word);
+      if ($count) {
+        $catalog[$word] = $count;
+        $score += $count;
+      }
+    }
+    arsort($catalog, SORT_NUMERIC);
+    $ration = round(($score / $word_count) * 100, 2);
+    $content .= $ration . '% ' . $suffix;
+
+    return $content;
   }
 
 }
