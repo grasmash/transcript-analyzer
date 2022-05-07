@@ -2,7 +2,7 @@
 
 # Installation
 
-1. Sign up for a IBM Watson Natural Language Processing account https://www.ibm.com/cloud/watson-natural-language-understanding.
+1. Sign up for a _free_ IBM Watson Natural Language Processing account https://www.ibm.com/cloud/watson-natural-language-understanding.
 2. Note the API key for your new account.
 3. Download and install grasmash/transcript-analyzer
 ```
