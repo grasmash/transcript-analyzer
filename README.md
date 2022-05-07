@@ -10,4 +10,7 @@ git clone git@github.com:grasmash/transcript-analyzer.git
 cd transcript-analyzer
 composer install
 ```
-4. Run `./bin/app.php analyze [some-file].vtt [api-key]`
+4. Run:
+```
+./bin/app.php analyze [base-url] [api-key] [some-file].vtt
+```

@@ -24,8 +24,9 @@ class Analyze extends Command
 
   protected function configure(): void
   {
-    $this->addArgument('file-path', InputArgument::REQUIRED, 'The path to the vtt file');
+    $this->addArgument('base-url', InputArgument::REQUIRED, 'The base URL for your Natural Language Understanding instance');
     $this->addArgument('api-key', InputArgument::REQUIRED, 'The IBM natural language processing API key');
+    $this->addArgument('file-path', InputArgument::REQUIRED, 'The path to the vtt file');
   }
 
   /**
@@ -40,7 +41,7 @@ class Analyze extends Command
     $io = new SymfonyStyle($input, $output);
     $vtt = $this->loadVttFile($input);
     $text_by_author = $this->getTextByAuthor($vtt);
-    $client = $this->createClient($input->getArgument('api-key'));
+    $client = $this->createClient($input->getArgument('base-url'), $input->getArgument('api-key'));
 
     $io->note('Speakers are listed in order of appearance');
     $table = new Table($output);
@@ -106,7 +107,10 @@ class Analyze extends Command
    */
   protected function loadVttFile(InputInterface $input): WebvttFile {
     $file_path = $input->getArgument('file-path');
-    if ($file_path)
+    $path_info = pathinfo($file_path);
+    if ($path_info['extension'] != 'vtt') {
+      throw new RuntimeException('The file type must be .vtt');
+    }
     $fs = new Filesystem();
     if (!$fs->exists($file_path)) {
       throw new RuntimeException("The specified file $file_path does not exist");
@@ -139,9 +143,12 @@ class Analyze extends Command
   }
 
   /**
+   * @param $base_url
+   * @param $api_key
+   *
    * @return \GuzzleHttp\Client
    */
-  protected function createClient($api_key): Client {
+  protected function createClient($base_url, $api_key): Client {
     $stack = HandlerStack::create();
     $stack->push(new CacheMiddleware(
       new GreedyCacheStrategy(
@@ -154,7 +161,7 @@ class Analyze extends Command
     ),
       'cache');
     return new Client([
-      'base_uri' => 'https://api.us-east.natural-language-understanding.watson.cloud.ibm.com/instances/1e49e4c7-d1cc-42b9-9352-0340b2b93242',
+      'base_uri' => $base_url,
       'auth' => ['apikey', $api_key],
       'headers' => [
         'Content-Type' => 'application/json',
